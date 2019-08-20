@@ -81,6 +81,42 @@ func resHandler(w http.ResponseWriter, r *http.Request) {
 	tmpl.Execute(w, cs)
 }
 
+func updateHandler(w http.ResponseWriter, r *http.Request) {
+
+	vars := mux.Vars(r)
+	cusid := vars["id"]
+
+	fmt.Println()
+
+	db, err := sql.Open("mysql", "hbstudent:hbstudent@tcp(localhost:3306)/goschema")
+
+	if err != nil {
+		panic(err.Error()) // Just for example purpose. You should use proper error handling instead of panic
+	}
+	defer db.Close()
+
+	rows, err := db.Query("select * from customer where id=" + cusid)
+	if err != nil {
+		panic(err.Error()) // Just for example purpose. You should use proper error handling instead of panic
+	}
+
+	var id, fname, lname string
+	for rows.Next() {
+
+		rows.Scan(&id, &fname, &lname)
+
+	}
+	da := Customer{
+		Id:        id,
+		FirstName: fname,
+		LastName:  lname,
+	}
+
+	tmpl := template.Must(template.ParseFiles("static/update.html"))
+	data := &da
+	tmpl.Execute(w, data)
+}
+
 func main() {
 
 	r := mux.NewRouter()
@@ -92,6 +128,7 @@ func main() {
 	r.HandleFunc("/", viewHandler)
 	r.HandleFunc("/hello", helloHandler)
 	r.HandleFunc("/response", resHandler)
+	r.HandleFunc("/updatecustomer/{id:[0-9]+}", updateHandler)
 	http.ListenAndServe(":8080", r)
 
 }

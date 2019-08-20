@@ -18,6 +18,9 @@
                 tr:nth-child(even) {
                   background-color: #dddddd;
                 }
+                h1{
+                  color: blue;
+                }
                 </style>
 </head>
 
@@ -26,27 +29,30 @@
 
 <h1>This is response page !!</h1>
 
-<h3>The data is</h3>
-
 <table>
     <tr>
         <th>ID</th>
         <th>FirstName</th>
         <th>LastName</th>
+        <th>Acions</th>
 
     </tr>
 
     {{range .}}                             <!-- Range over the data - Array of structs-->
     <tr> 
-    <td>{{.Id}}</td>
+        {{$customerid := .Id}}
+    <td>{{$customerid}}</td>
     <td>{{.FirstName}}</td>
     <td>{{.LastName}}</td>
+    <td><a href="updatecustomer/{{$customerid}}">Update</a></td>
      </tr>
     {{end}}
 
 
+
    
     </table>
+
 
 
 <ul>
