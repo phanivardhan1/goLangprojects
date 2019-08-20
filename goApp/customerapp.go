@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
 	"html/template"
 	"net/http"
@@ -10,40 +11,87 @@ import (
 	_ "github.com/gorilla/mux"
 )
 
-type Employee struct {
-	Name string
+type Customer struct {
+	Id        string
+	FirstName string
+	LastName  string
 }
 
 func viewHandler(w http.ResponseWriter, r *http.Request) {
-
-	//fmt.Fprintf(w, "hello this is  a web app")
-
-	s := Employee{
-		Name: "phani",
-	}
-	tmpl := template.Must(template.ParseFiles("static/index.html"))
-	fmt.Println(s)
-
-	w.Header().Set("Content-Type", "text/html")
-	da := &Employee{Name: "phani"}
-	
-
-	tmpl.Execute(w, da)
-
+	tmpl := template.Must(template.ParseFiles("static/index.html", "static/response.html"))
+	tmpl.Execute(w, nil)
 
 }
 
 func helloHandler(w http.ResponseWriter, r *http.Request) {
+	id := r.FormValue("id")
+	fname := r.FormValue("fname") //Reading form Values
+	lname := r.FormValue("lname")
 
+	cus1 := Customer{
+		Id:        id,
+		FirstName: fname, // creaing cusomer object using the form values
+		LastName:  lname,
+	}
+
+	fmt.Println(cus1)
+
+	db, err := sql.Open("mysql", "hbstudent:hbstudent@tcp(localhost:3306)/goschema")
+
+	if err != nil {
+		panic(err.Error()) // Just for example purpose. You should use proper error handling instead of panic
+	}
+
+	defer db.Close()
+
+	stmtIns, err := db.Query("INSERT INTO customer (id, firstname, lastname) VALUES ('" + id + "','" + fname + "','" + lname + "')")
+
+	if err != nil {
+		panic(err.Error()) // proper error handling instead of panic in your app
+	}
+	defer stmtIns.Close()
+
+	http.Redirect(w, r, "/response", http.StatusFound)
+
+}
+
+func resHandler(w http.ResponseWriter, r *http.Request) {
+	tmpl := template.Must(template.ParseFiles("./static/response.html"))
+
+	db, err := sql.Open("mysql", "hbstudent:hbstudent@tcp(localhost:3306)/goschema")
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	rows, err := db.Query("select * from customer")
+
+	defer rows.Close()
+
+	var customers []Customer
+
+	for rows.Next() {
+		var c Customer
+		rows.Scan(&c.Id, &c.FirstName, &c.LastName)
+		//var customer []Customer
+		customers = append(customers, c)
+		//fmt.Println(customers)
+	}
+	cs := &customers
+	tmpl.Execute(w, cs)
 }
 
 func main() {
 
 	r := mux.NewRouter()
+	//f := http.FileServer(http.Dir("./static"))
+
+	// fs := http.FileServer(http.Dir("static/"))
+	// http.Handle("/static/", http.StripPrefix("/static/", fs))
 
 	r.HandleFunc("/", viewHandler)
 	r.HandleFunc("/hello", helloHandler)
-
+	r.HandleFunc("/response", resHandler)
 	http.ListenAndServe(":8080", r)
 
 }

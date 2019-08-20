@@ -1,0 +1,61 @@
+<html>
+
+<head>
+
+        <style>
+                table {
+                  font-family: arial, sans-serif;
+                  border-collapse: collapse;
+                  width: 100%;
+                }
+                
+                td, th {
+                  border: 1px solid #dddddd;
+                  text-align: left;
+                  padding: 8px;
+                }
+                
+                tr:nth-child(even) {
+                  background-color: #dddddd;
+                }
+                </style>
+</head>
+
+
+<body>
+
+<h1>This is response page !!</h1>
+
+<h3>The data is</h3>
+
+<table>
+    <tr>
+        <th>ID</th>
+        <th>FirstName</th>
+        <th>LastName</th>
+
+    </tr>
+
+    {{range .}}                             <!-- Range over the data - Array of structs-->
+    <tr> 
+    <td>{{.Id}}</td>
+    <td>{{.FirstName}}</td>
+    <td>{{.LastName}}</td>
+     </tr>
+    {{end}}
+
+
+   
+    </table>
+
+
+<ul>
+
+</ul>
+</body>
+
+
+
+
+
+</html>
